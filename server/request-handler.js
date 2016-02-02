@@ -4,7 +4,8 @@ exports.requestHandler = function(request, response) {
   console.log("Serving request type " + request.method + " for url " + request.url);
   
   var pathName = url.parse(request.url).pathname.split('/');
-  
+  var query = url.parse(request.url, true).query;
+
   if(pathName[1] === 'classes'){
 
     if(request.method === "GET"){
@@ -18,8 +19,10 @@ exports.requestHandler = function(request, response) {
       if(!Array.isArray(data[pathName[2]])){
         data[pathName[2]] = [];
       }
-                  
-      response.end(JSON.stringify( {results: data[pathName[2]] } ));
+      
+      var results = data[pathName[2]].slice(0, query.limit.parseInt());
+
+      response.end(JSON.stringify( {results: results } ));
 
     } else if(request.method === "POST"){
         
@@ -33,10 +36,22 @@ exports.requestHandler = function(request, response) {
         if(!Array.isArray(data[pathName[2]])){
           data[pathName[2]] = [];
         }
-        data[pathName[2]].push(JSON.parse(newData.toString()));
+        var newMessage = JSON.parse(newData.toString());
+        newMessage.createdAt = Date.now();
+        data[pathName[2]].push(newMessage);
+
       });
     
       response.end(); 
+
+    } else if(request.method === "OPTIONS"){
+      
+      statusCode = 200;
+      headers = defaultCorsHeaders;
+      headers['Content-Type'] = "application/json";
+      response.writeHead(statusCode, headers);
+      response.end();
+      
     }
     
   } else {
