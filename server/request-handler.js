@@ -1,4 +1,5 @@
 var url = require('url');
+var fs = require('fs');
 
 exports.requestHandler = function(request, response) {
   console.log("Serving request type " + request.method + " for url " + request.url);
@@ -6,7 +7,20 @@ exports.requestHandler = function(request, response) {
   var pathName = url.parse(request.url).pathname.split('/');
   var query = url.parse(request.url, true).query;
 
-  if(pathName[1] === 'classes'){
+  if(request.url === '/') {
+    fs.readFile('./client/index.html', function (err, html) {
+      if (err) {
+          throw err; 
+      }
+      var headers = defaultCorsHeaders;
+      headers['Content-Type'] = "text/html";  
+      response.writeHead(200, headers);
+      
+      response.write(html);  
+      
+      response.end();  
+    });
+  } else if (pathName[1] === 'classes'){
 
     if(request.method === "GET"){
 
@@ -87,7 +101,7 @@ var filterByTime = function(array, query){
       return array.slice(timeIndex-limit, timeIndex);
     }
   } else {
-    return array.slice(array.length - Number.parseInt(query.limit) - 1);
+    return array.slice(array.length - Number.parseInt(query.limit));
   }
 
 };
@@ -103,6 +117,9 @@ var binarySearch = function (array, target, start, end) {
     return index;
   }
   if (end === start) {
+    return -1; 
+  }
+  if ((target > array[end].createdAt) || (target < array[start].createdAt)) {
     return -1; 
   }
   if (target < array[index].createdAt) {
