@@ -20,7 +20,7 @@ exports.requestHandler = function(request, response) {
         data[pathName[2]] = [];
       }
       
-      var results = filterByTime(data[pathName[2]], query);
+      var results = filterByTime(data[pathName[2]], query).reverse();
       
       response.end(JSON.stringify( {results: results } ));
 
@@ -93,8 +93,6 @@ var filterByTime = function(array, query){
 };
 
 var binarySearch = function (array, target, start, end) {
-  console.log(array);
-  console.log('target: ' + target);
   start = start || 0;
   if (end === undefined || end === 0){
     end = array.length - 1;
@@ -104,9 +102,7 @@ var binarySearch = function (array, target, start, end) {
   if (array[index].createdAt === target) {
     return index;
   }
-  console.log('start: ' + start + ', end: ' + end);
   if (end === start) {
-    console.log('escape!');
     return -1; 
   }
   if (target < array[index].createdAt) {
